@@ -1,0 +1,57 @@
+name: Flutter Android CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Pub get
+        run: flutter pub get
+
+      # Опционально, можно убрать, если мешает поначалу
+      - name: Analyze
+        run: flutter analyze
+
+      # Если ты НЕ коммитишь google-services.json, положи его в Secrets:
+      # Settings -> Secrets and variables -> Actions -> New repository secret
+      # Name: ANDROID_GOOGLE_SERVICES_JSON
+      # Value: содержимое файла google-services.json
+      - name: Write google-services.json (from secret if provided)
+        if: ${{ secrets.ANDROID_GOOGLE_SERVICES_JSON != '' }}
+        run: |
+          mkdir -p android/app
+          echo '${{ secrets.ANDROID_GOOGLE_SERVICES_JSON }}' > android/app/google-services.json
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
