@@ -7,9 +7,7 @@ import 'package:skidkz_2/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Firebase (will use default options, user must fill them)
-  // We wrap in a try-catch in case options are missing/invalid to allow running partially
+
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
